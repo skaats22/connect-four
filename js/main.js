@@ -3,8 +3,9 @@
 
 
 /*-------------------- state variables --------------------*/
-
-
+let board;
+let turn;
+let winner;
 
 /*-------------------- cached elements --------------------*/
 
@@ -16,7 +17,10 @@
 
 /*-------------------- functions --------------------*/
 
-
+function init() {
+  turn = 1;
+  winner = null;
+}
 
 
 
