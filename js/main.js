@@ -20,7 +20,7 @@ const messageEl = document.querySelector('h1');
 const markerEls = [...document.querySelectorAll('#markers > div')];
 
 /*-------------------- event listeners --------------------*/
-// WHen a marker is clicked, run function handleDrop
+// When a marker is clicked, run function handleDrop
 document.getElementById('markers').addEventListener('click', handleDrop);
 // When Play Again button is clicked, run function init
 playAgainBtn.addEventListener('click', init);
@@ -32,8 +32,9 @@ init();
 // Initialize all state variables, then call render()
 function init() {
 
-  // to visualize 
-  // array 90 degrees counter-clockwise
+  // To visualize the mapping between the column arrays
+  //  and the cells on the page (DOM), rotate the board 
+  //  array 90 degrees counter-clockwise
   board = [
     [null, null, null, null, null, null], // column 0
     [null, null, null, null, null, null], // column 1
@@ -60,13 +61,72 @@ function handleDrop(eventObject) {
   const rowIdx = colArr.indexOf(null);
   // Update the borad/column state
   colArr[rowIdx] = turn;
-  winner = getWinner();
+  winner = getWinner(colIdx, rowIdx);
   turn *= -1;
   render();
 }
 
-function getWinner() {
-  return null;
+function getWinner(colIdx, rowIdx) {
+  // Winner has to include the most recent cell clicked so start from there
+  return checkVertical(colIdx, rowIdx) || checkHorizontal(colIdx, rowIdx) || 
+  checkForwardSlash(colIdx, rowIdx) || checkBackSlash(colIdx, rowIdx);
+}
+
+function checkBackSlash(colIdx, rowIdx) {
+  const numUpLeft = countNumAdjacent(colIdx, rowIdx, -1, 1);
+  const numDownright = countNumAdjacent(colIdx, rowIdx, 1, -1);
+  // If markers to left and right of last placed marker is greater, 
+  //  or equal to 3. Return turn, but if not,
+  //  then return null, which keeps game going
+  return (numUpLeft + numDownright) >= 3 ? turn : null;
+}
+
+function checkForwardSlash(colIdx, rowIdx) {
+  const numUpRight = countNumAdjacent(colIdx, rowIdx, 1, 1);
+  const numDownLeft = countNumAdjacent(colIdx, rowIdx, -1, -1);
+  // If markers to left and right of last placed marker is greater, 
+  //  or equal to 3. Return turn, but if not,
+  //  then return null, which keeps game going
+  return (numUpRight + numDownLeft) >= 3 ? turn : null;
+}
+
+function checkHorizontal(colIdx, rowIdx) {
+  // Need to check left & right 3 markers are the same
+  // Need to check if out of bounds
+
+  // col/rowOffset is the value to adjust the current
+  //  colIdx and rowIdx by after each iteration
+  const numLeft = countNumAdjacent(colIdx, rowIdx, -1, 0);
+  const numRight = countNumAdjacent(colIdx, rowIdx, 1, 0);
+  // If markers to left and right of last placed marker is greater, 
+  //  or equal to 3. Return turn, but if not,
+  //  then return null, which keeps game going
+  return (numLeft + numRight) >= 3 ? turn : null;
+}
+
+function checkVertical(colIdx, rowIdx) {
+  // Need to check below 3 markers are the same
+  // Need to check if out of bounds
+
+  // col/rowOffset is the value to adjust the current
+  //  colIdx and rowIdx by after each iteration
+  const numBelow = countNumAdjacent(colIdx, rowIdx, 0, -1);
+  // If markers below = 3, then return turn, but if not,
+  //  then return null, which keeps game going
+  return numBelow === 3 ? turn : null;
+}
+
+function countNumAdjacent(colIdx, rowIdx, colOffset, rowOffset) {
+  let count = 0;
+  colIdx += colOffset;
+  rowIdx += rowOffset;
+  // If && = falsy, it gets returned immediately
+  while (board[colIdx] && board[colIdx][rowIdx] === turn) {
+    count++;
+    colIdx += colOffset;
+    rowIdx += rowOffset;
+  }
+  return count;
 }
 
 // Visualize all state and other info in the DOM
@@ -111,4 +171,3 @@ function renderMessage() {
     messageEl.innerHTML = `<span style="color: ${COLORS[winner]}">${COLORS[winner].toUpperCase()}</span> wins!`
   }
 }
-
